@@ -12,6 +12,7 @@ templates: search
 tester_args:
   default_build_cmd: "${ROOT_DIR}/build.sh test_$(basename $PWD)"
   default_test_cmd: "cd ${BUILD_DIR} && env -i ./test_$(basename $OLDPWD)"
+public_patterns: ["**", "**/.gitignore"]
 
 # gitlab
 course_group: cpp-simple
