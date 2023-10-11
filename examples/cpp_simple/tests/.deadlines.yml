@@ -1,0 +1,6 @@
+- start: 01-01-2023 00:00
+  deadline: 31-12-2023 23:59
+  enabled: false
+  tasks:
+    - task: 00_test
+      score: 10

@@ -1,0 +1,19 @@
+name: cpp-simple
+
+# course
+deadlines: hard
+second_deadline_max: 0.3
+
+# checker
+system: script
+layout: flat
+executor: sandbox
+templates: search
+
+# gitlab
+course_group: cpp-simple
+public_repo: cpp-simple/public-2023-fall
+students_group: cpp-simple/students-2023-fall
+
+# manytask
+manytask_url: https://cpp.manytask.org
