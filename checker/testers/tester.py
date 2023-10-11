@@ -96,6 +96,9 @@ class Tester:
         elif system == 'cpp':
             from . import cpp
             return cpp.CppTester(cleanup=cleanup, dry_run=dry_run)
+        elif system == 'script':
+            from . import script
+            return script.ScriptTester(cleanup=cleanup, dry_run=dry_run)
         else:
             raise TesterNotImplemented(f'Tester for <{system}> are not supported right now')
 
@@ -181,6 +184,7 @@ class Tester:
         @param config_dir: Directory with task config
         @param public_tests_dir: Directory to copy public tests from
         @param private_tests_dir: Directory to copy private tests from
+        @param tests_root_dir: Root directory of the repository with tasks
         @param verbose: Verbose output (can exhibit private tests information)
         @param normalize_output: Normalize all stages output to stderr
         @raise RunFailedError: on any build/test error
