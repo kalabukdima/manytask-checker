@@ -58,8 +58,8 @@ class Tester:
                     config_kwargs[config_field] = field_value
 
             if raw_config:
-                bad_keys = ','.join(raw_config.keys())
-                raise TaskTesterTestConfigException(f'Test Config {test_config} has unknown key(s) <{bad_keys}>')
+                extra_keys = ','.join(raw_config.keys())
+                print_info(f'Test config {test_config} has unused key(s) <{extra_keys}>', color='orange')
 
             return cls(**config_kwargs)
 
