@@ -64,7 +64,6 @@ class ScriptTester(Tester):
                 copy_files,
                 source=private_tests_dir,
                 target=public_tests_dir,
-                ignore_patterns=[".tester.json"],
                 verbose=verbose,
             )
 
