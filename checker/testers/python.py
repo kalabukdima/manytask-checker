@@ -183,6 +183,7 @@ class PythonTester(Tester):
             self,
             test_config: TaskTestConfig,
             build_dir: Path,
+            public_tests_dir: Path | None,
             sandbox: bool = False,
             verbose: bool = False,
             normalize_output: bool = False,

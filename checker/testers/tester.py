@@ -150,6 +150,7 @@ class Tester:
             self,
             test_config: TaskTestConfig,
             build_dir: Path,
+            public_tests_dir: Path | None,
             sandbox: bool = False,
             verbose: bool = False,
             normalize_output: bool = False,
@@ -215,6 +216,7 @@ class Tester:
             score_percentage = self._run_tests(
                 test_config,
                 build_dir,
+                public_tests_dir,
                 sandbox=True,
                 verbose=verbose,
                 normalize_output=normalize_output

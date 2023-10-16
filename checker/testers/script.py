@@ -21,7 +21,7 @@ class ScriptTester(Tester):
     On the test stage it runs @param test_cmd in the isolated sandbox inside the build directory
     limiting its run time to @test_timeout seconds.
 
-    If you need to run more than one command consider using a shell: `sh -c <command1> && <command2>`
+    If you need to run more than one command consider using shell operators: `<command1> && <command2>`
     """
 
     @dataclass
@@ -94,18 +94,26 @@ class ScriptTester(Tester):
             self,
             test_config: TaskTestConfig,
             build_dir: Path,
+            public_tests_dir: Path | None,
             sandbox: bool = False,
             verbose: bool = False,
             normalize_output: bool = False,
     ) -> float:
+        assert public_tests_dir
+
         tests_err = None
         try:
             print_info('Running tests...', color='orange')
             if not self.dry_run:
+                env = {
+                    "PATH": os.environ["PATH"],
+                    "BUILD_DIR": str(build_dir.absolute()),
+                }
                 output = self._executor(
                     ["sh", "-ec" + ("x" if verbose else ""), test_config.test_cmd],
                     sandbox=sandbox,
-                    cwd=str(build_dir.absolute()),
+                    cwd=str(public_tests_dir.absolute()),
+                    env=env,
                     timeout=test_config.test_timeout,
                     verbose=verbose,
                     capture_output=True,
