@@ -78,6 +78,7 @@ class Tester:
             system: str,
             cleanup: bool = True,
             dry_run: bool = False,
+            **kwargs: Any,
     ) -> 'Tester':
         """
         Main creation entrypoint to Tester
@@ -89,16 +90,16 @@ class Tester:
         """
         if system == 'python':
             from . import python
-            return python.PythonTester(cleanup=cleanup, dry_run=dry_run)
+            return python.PythonTester(cleanup=cleanup, dry_run=dry_run, **kwargs)
         elif system == 'make':
             from . import make
-            return make.MakeTester(cleanup=cleanup, dry_run=dry_run)
+            return make.MakeTester(cleanup=cleanup, dry_run=dry_run, **kwargs)
         elif system == 'cpp':
             from . import cpp
-            return cpp.CppTester(cleanup=cleanup, dry_run=dry_run)
+            return cpp.CppTester(cleanup=cleanup, dry_run=dry_run, **kwargs)
         elif system == 'script':
             from . import script
-            return script.ScriptTester(cleanup=cleanup, dry_run=dry_run)
+            return script.ScriptTester(cleanup=cleanup, dry_run=dry_run, **kwargs)
         else:
             raise TesterNotImplemented(f'Tester for <{system}> are not supported right now')
 

@@ -5,7 +5,7 @@ Include tests, layout, manytask url, gitlab urls, etc. settings
 from __future__ import annotations
 
 import os
-from dataclasses import InitVar, dataclass
+from dataclasses import InitVar, dataclass, field
 from pathlib import Path
 
 import yaml
@@ -16,6 +16,11 @@ from ..utils.print import print_info
 
 @dataclass
 class CourseConfig:
+    @dataclass
+    class TesterArgs:
+        default_build_cmd: str | None = None
+        default_test_cmd: str | None = None
+
     # main course settings
     name: str
 
@@ -48,6 +53,8 @@ class CourseConfig:
     # checker default
     layout: str = 'groups'
     executor: str = 'sandbox'
+    tester_args: InitVar[dict[str, str]] = {}
+    tester_args_val: CourseConfig.TesterArgs = field(default_factory=TesterArgs)
 
     # info
     links: dict[str, str] | None = None
@@ -63,6 +70,7 @@ class CourseConfig:
 
     def __post_init__(
             self,
+            tester_args: dict[str, str],
             manytask_token_id: str,
             gitlab_service_token_id: str,
             gitlab_api_token_id: str,
@@ -78,6 +86,8 @@ class CourseConfig:
         self.gitlab_api_token = os.environ.get(gitlab_api_token_id)
         if not self.gitlab_api_token:
             print_info(f'Unable to find env <{gitlab_api_token_id}>', color='orange')
+
+        self.tester_args_val = CourseConfig.TesterArgs(**tester_args)
 
     @classmethod
     def from_yaml(cls, course_config: Path) -> 'CourseConfig':

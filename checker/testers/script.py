@@ -29,8 +29,19 @@ class ScriptTester(Tester):
         test_timeout: int = 60  # seconds
 
         allow_change: list[str] = field(default_factory=list)
-        build_cmd: str = ""
-        test_cmd: str = ""
+        build_cmd: str = ''
+        test_cmd: str = ''
+
+    def __init__(
+            self,
+            cleanup: bool = True,
+            dry_run: bool = False,
+            default_build_cmd: str | None = None,
+            default_test_cmd: str | None = None,
+    ):
+        super(ScriptTester, self).__init__(cleanup=cleanup, dry_run=dry_run)
+        self.default_build_cmd = default_build_cmd or 'echo "no build command specified"'
+        self.default_test_cmd = default_test_cmd or 'echo "no test command specified"'
 
     def _gen_build(  # type: ignore[override]
             self,
@@ -72,7 +83,7 @@ class ScriptTester(Tester):
                 "ROOT_DIR": str(tests_root_dir.absolute()),
             }
             self._executor(
-                ["sh", "-ec" + ("x" if verbose else ""), test_config.build_cmd],
+                ["sh", "-ec" + ("x" if verbose else ""), test_config.build_cmd or self.default_build_cmd],
                 cwd=public_tests_dir,
                 env=env,
                 verbose=verbose,
@@ -110,7 +121,7 @@ class ScriptTester(Tester):
                     "BUILD_DIR": str(build_dir.absolute()),
                 }
                 output = self._executor(
-                    ["sh", "-ec" + ("x" if verbose else ""), test_config.test_cmd],
+                    ["sh", "-ec" + ("x" if verbose else ""), test_config.test_cmd or self.default_test_cmd],
                     sandbox=sandbox,
                     cwd=str(public_tests_dir.absolute()),
                     env=env,

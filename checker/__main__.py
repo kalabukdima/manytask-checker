@@ -6,6 +6,7 @@ import os
 import shutil
 import sys
 import tempfile
+from dataclasses import asdict
 from pathlib import Path
 from typing import Any
 
@@ -97,6 +98,7 @@ def check(
         system=course_config.system,
         cleanup=not no_clean,
         dry_run=dry_run,
+        **asdict(course_config.tester_args_val),
     )
 
     tasks: list[Task] | None = None
@@ -158,6 +160,7 @@ def grade(
     )
     tester = Tester.create(
         system=course_config.system,
+        **asdict(course_config.tester_args_val),
     )
 
     grade_on_ci(

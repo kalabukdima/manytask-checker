@@ -1,5 +1,3 @@
 {
-  "allow_change": ["sum.cpp"],
-  "build_cmd": "${ROOT_DIR}/build.sh test_sum",
-  "test_cmd": "cd ${BUILD_DIR} && ./test_sum"
+  "allow_change": ["sum.cpp"]
 }
