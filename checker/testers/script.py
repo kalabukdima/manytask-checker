@@ -40,8 +40,8 @@ class ScriptTester(Tester):
             default_test_cmd: str | None = None,
     ):
         super(ScriptTester, self).__init__(cleanup=cleanup, dry_run=dry_run)
-        self.default_build_cmd = default_build_cmd or 'echo "no build command specified"'
-        self.default_test_cmd = default_test_cmd or 'echo "no test command specified"'
+        self.default_build_cmd = default_build_cmd
+        self.default_test_cmd = default_test_cmd
 
     def _gen_build(  # type: ignore[override]
             self,
@@ -55,6 +55,9 @@ class ScriptTester(Tester):
             verbose: bool = False,
             normalize_output: bool = False,
     ) -> None:
+        build_cmd = test_config.build_cmd or self.default_build_cmd
+        if build_cmd is None:
+            return
         assert public_tests_dir
 
         print_info('Building...', color='orange')
@@ -82,7 +85,7 @@ class ScriptTester(Tester):
                 "ROOT_DIR": str(tests_root_dir.absolute()),
             }
             self._executor(
-                ["sh", "-ec" + ("x" if verbose else ""), test_config.build_cmd or self.default_build_cmd],
+                ["sh", "-ec" + ("x" if verbose else ""), build_cmd],
                 cwd=public_tests_dir,
                 env=env,
                 verbose=verbose,
@@ -109,6 +112,9 @@ class ScriptTester(Tester):
             verbose: bool = False,
             normalize_output: bool = False,
     ) -> float:
+        test_cmd = test_config.test_cmd or self.default_test_cmd
+        if test_cmd is None:
+            return
         assert public_tests_dir
 
         tests_err = None
@@ -120,7 +126,7 @@ class ScriptTester(Tester):
                     "BUILD_DIR": str(build_dir.absolute()),
                 }
                 output = self._executor(
-                    ["sh", "-ec" + ("x" if verbose else ""), test_config.test_cmd or self.default_test_cmd],
+                    ["sh", "-ec" + ("x" if verbose else ""), test_cmd],
                     sandbox=sandbox,
                     cwd=str(public_tests_dir.absolute()),
                     env=env,
