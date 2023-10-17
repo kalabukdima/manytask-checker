@@ -94,9 +94,6 @@ class Tester:
         elif system == 'make':
             from . import make
             return make.MakeTester(cleanup=cleanup, dry_run=dry_run, **kwargs)
-        elif system == 'cpp':
-            from . import cpp
-            return cpp.CppTester(cleanup=cleanup, dry_run=dry_run, **kwargs)
         elif system == 'script':
             from . import script
             return script.ScriptTester(cleanup=cleanup, dry_run=dry_run, **kwargs)

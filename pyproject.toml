@@ -55,6 +55,7 @@ version = {file = "VERSION"}
 
 [project.scripts]
 checker = "checker.__main__:main"
+testers-cmake = "testers_lib.run_cmake:main"
 
 [tool.setuptools.packages.find]
 exclude = ["tests*"]

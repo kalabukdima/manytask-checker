@@ -4,7 +4,7 @@ import os
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from ..exceptions import ExecutionFailedError, TestsFailedError
+from ..exceptions import BuildFailedError, ExecutionFailedError, TestsFailedError
 from ..utils.files import copy_files
 from ..utils.print import print_info
 from .tester import Tester
@@ -79,17 +79,21 @@ class ScriptTester(Tester):
         )
 
         if not self.dry_run:
-            env = {
-                "PATH": os.environ["PATH"],
-                "BUILD_DIR": str(build_dir.absolute()),
-                "ROOT_DIR": str(tests_root_dir.absolute()),
-            }
-            self._executor(
-                ["sh", "-ec" + ("x" if verbose else ""), build_cmd],
-                cwd=public_tests_dir,
-                env=env,
-                verbose=verbose,
-            )
+            try:
+                env = {
+                    "PATH": os.environ["PATH"],
+                    "BUILD_DIR": str(build_dir.absolute()),
+                    "ROOT_DIR": str(tests_root_dir.absolute()),
+                }
+                self._executor(
+                    ["sh", "-ec" + ("x" if verbose else ""), build_cmd],
+                    cwd=public_tests_dir,
+                    env=env,
+                    verbose=verbose,
+                )
+            except ExecutionFailedError as e:
+                print_info('ERROR', color='red')
+                raise BuildFailedError('Build error', output=e.output) from e
 
     def _clean_build(  # type: ignore[override]
             self,
@@ -114,7 +118,7 @@ class ScriptTester(Tester):
     ) -> float:
         test_cmd = test_config.test_cmd or self.default_test_cmd
         if test_cmd is None:
-            return
+            return 1.
         assert public_tests_dir
 
         tests_err = None
