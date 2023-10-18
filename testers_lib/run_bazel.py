@@ -21,6 +21,8 @@ from checker.utils.files import check_files_contains_regexp
 from checker.utils.print import print_info
 
 
+# TODO(@kalabukdima): reuse code across testers
+
 @dataclass
 class TaskTestConfig(Tester.TaskTestConfig):
     allow_change: list[str] = field(default_factory=list)
@@ -47,7 +49,7 @@ def run_check_regexp(
         raise_on_found=True,
     )
 
-def run_cmake_build(
+def run_bazel_build(
     executor: Sandbox,
     config: TaskTestConfig,
     *,
@@ -58,38 +60,21 @@ def run_cmake_build(
     **kwargs: Any,
 ) -> None:
     try:
-        print_info('Running cmake...', color='orange')
+        print_info('Building tests...', color='orange')
         executor(
-            ['cmake',
-                '-G', 'Ninja',
-                '-S', str(root_dir),
-                '-B', str(build_dir),
-                '-DENABLE_PRIVATE_TESTS=YES',
-                f'-DCMAKE_BUILD_TYPE={config.build_type}',
-            ],
+            ['bazel', 'build', ':all'],
+            cwd=task_dir,
             verbose=verbose,
         )
     except ExecutionFailedError:
         print_info('ERROR', color='red')
-        raise BuildFailedError('cmake execution failed')
-
-    for target in config.tests:
-        try:
-            print_info(f'Building {target}...', color='orange')
-            executor(
-                ['cmake', '--build', str(build_dir), '-t', target],
-                verbose=verbose,
-            )
-        except ExecutionFailedError:
-            print_info('ERROR', color='red')
-            raise BuildFailedError(f'Can\'t build {target}')
+        raise BuildFailedError('Bazel build failed')
 
 def run_linter(
     executor: Sandbox,
     config: TaskTestConfig,
     *,
     run_clang_format_script: Path,
-    build_dir: Path,
     task_dir: Path,
     verbose: bool,
     **kwargs: Any,
@@ -109,12 +94,19 @@ def run_linter(
 
     if config.clang_tidy_enabled:
         try:
+            print_info('Generating compile_commands.json...', color='orange')
+            executor(
+                ['bazel', 'run', '@hedron_compile_commands//:refresh_all'],
+                verbose=verbose,
+            )
+
             print_info('Running clang tidy...', color='orange')
             files = [str(file) for file in task_dir.rglob('*.cpp')]
             executor(
-                ['clang-tidy', '-p', str(build_dir.resolve()), *files],
+                ['clang-tidy', *files],
                 verbose=verbose,
             )
+
             print_info('[No issues]')
             print_info('OK', color='green')
         except ExecutionFailedError:
@@ -125,28 +117,27 @@ def run_tests(
     executor: Sandbox,
     config: TaskTestConfig,
     *,
-    build_dir: Path,
+    task_dir: Path,
     verbose: bool,
     **kwargs: Any,
 ) -> None:
-    for test_binary in config.tests:
-        try:
-            print_info(f'Running {test_binary}...', color='orange')
-            executor(
-                f"./{test_binary}",
-                sandbox=True,
-                cwd=build_dir,
-                verbose=verbose,
-                timeout=config.timeout,
-            )
-            print_info('OK', color='green')
-        except TimeoutExpiredError:
-            print_info('ERROR', color='red')
-            message = f'Your solution exceeded time limit: {config.timeout} seconds'
-            raise TestsFailedError(message)
-        except ExecutionFailedError:
-            print_info('ERROR', color='red')
-            raise TestsFailedError("Test failed (wrong answer or sanitizer error)")
+    try:
+        print_info(f'Running tests...', color='orange')
+        executor(
+            ['bazel', 'test', ':all', '--color=yes'],
+            sandbox=False,
+            cwd=task_dir,
+            verbose=verbose,
+            timeout=config.timeout,
+        )
+        print_info('OK', color='green')
+    except TimeoutExpiredError:
+        print_info('ERROR', color='red')
+        message = f'Your solution exceeded time limit: {config.timeout} seconds'
+        raise TestsFailedError(message)
+    except ExecutionFailedError:
+        print_info('ERROR', color='red')
+        raise TestsFailedError("Test failed (wrong answer or sanitizer error)")
     print_info('All tests passed', color='green')
 
 def run_all(
@@ -157,7 +148,7 @@ def run_all(
     executor = Sandbox(dry_run=dry_run)
 
     run_check_regexp(executor, **kwargs)
-    run_cmake_build(executor, **kwargs)
+    run_bazel_build(executor, **kwargs)
     run_linter(executor, **kwargs)
     run_tests(executor, **kwargs)
 
@@ -197,7 +188,7 @@ def main(
             **kwargs,
         )
     except RunFailedError as e:
-        print_info('\nCMake tester error: ' + e.msg + (e.output or ''), color='red')
+        print_info('\Bazel tester error: ' + e.msg + (e.output or ''), color='red')
         exit(1)
 
 if __name__ == '__main__':  # pragma: nocover
