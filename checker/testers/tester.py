@@ -92,17 +92,11 @@ class Tester:
         @param build_dir: Reuse given build directory instead of creating separate ones
         @return: Configured Tester object (python, cpp, etc.)
         """
-        if system == 'python':
-            from . import python
-            return python.PythonTester(cleanup=cleanup, dry_run=dry_run, build_dir=build_dir, **kwargs)
-        elif system == 'make':
-            from . import make
-            return make.MakeTester(cleanup=cleanup, dry_run=dry_run, build_dir=build_dir, **kwargs)
-        elif system == 'script':
+        if system == 'script':
             from . import script
             return script.ScriptTester(cleanup=cleanup, dry_run=dry_run, build_dir=build_dir, **kwargs)
         else:
-            raise TesterNotImplemented(f'Tester for <{system}> are not supported right now')
+            raise TesterNotImplemented(f'Tester for <{system}> is not supported right now')
 
     @abstractmethod
     def _gen_build(
