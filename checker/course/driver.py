@@ -137,15 +137,7 @@ class CourseDriver:
         if self.repo_type == 'public':
             raise BadConfig('Unable to find `deadlines` file in public repo')
 
-        deadlines_file_path: Path
-        if self.layout == 'lectures':
-            deadlines_file_path = self.root_dir / '.deadlines.yml'
-        elif self.layout == 'groups':
-            deadlines_file_path = self.root_dir / '.deadlines.yml'
-        elif self.layout == 'flat':
-            deadlines_file_path = self.root_dir / 'tests' / '.deadlines.yml'
-        else:
-            assert False, 'Not Reachable'  # pragma: no cover
+        deadlines_file_path: Path = self.root_dir / '.deadlines.yml'
 
         if raise_if_not_exists and (not deadlines_file_path or not deadlines_file_path.exists()):
             raise BadConfig(f'Deadlines file <{deadlines_file_path}> not exists')
