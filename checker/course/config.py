@@ -55,6 +55,7 @@ class CourseConfig:
     executor: str = 'sandbox'
     tester_args: InitVar[dict[str, str]] = {}
     tester_args_val: CourseConfig.TesterArgs = field(default_factory=TesterArgs)
+    public_patterns: list[str] = field(default_factory=lambda: ["**", "**/.gitignore"])  # ignores files and dirs starting with "."
 
     # info
     links: dict[str, str] | None = None

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import shutil
 from pathlib import Path
+import glob
 
 from ..course import CourseConfig, CourseDriver
 from ..course.schedule import CourseSchedule
@@ -10,11 +11,14 @@ from ..utils.git import commit_push_all_repo, setup_repo_in_dir
 from ..utils.print import print_info
 
 
-EXPORT_IGNORE_COMMON_FILE_PATTERNS = [
-    '.git', '*.docker', '.releaser-ci.yml', '.deadlines.yml', '.course.yml', '.DS_Store', '.venv',
-    '.*_cache', '.github', '*.drawio',
-]
-
+def _find_files(
+    root_dir: Path,
+    patterns: list[str],
+):
+    matches = []
+    for pattern in patterns:
+        matches.extend(glob.glob(pattern, root_dir=root_dir, recursive=True, include_hidden=False))
+    return [Path(path) for path in matches if Path(path).is_file()]
 
 def _get_enabled_files_and_dirs_private_to_public(
         course_config: CourseConfig,
@@ -22,101 +26,13 @@ def _get_enabled_files_and_dirs_private_to_public(
         public_course_driver: CourseDriver,
         private_course_driver: CourseDriver,
 ) -> dict[Path, Path]:
-    # Common staff; files only, all from private repo except ignored
-    common_files: dict[Path, Path] = {
-        i: public_course_driver.root_dir / i.name
-        for i in private_course_driver.root_dir.glob('*')
-        if i.is_file() and not filename_match_patterns(i, EXPORT_IGNORE_COMMON_FILE_PATTERNS)
+    patterns = course_config.public_patterns
+    files = {
+        path: public_course_driver.root_dir / path
+        for path in _find_files(str(private_course_driver.root_dir), patterns)
+        if path.is_file()
     }
-
-    # Course docs
-    course_docs: dict[Path, Path] = dict()
-    if (private_course_driver.root_dir / 'docs').exists():
-        course_docs.update({
-            private_course_driver.root_dir / 'docs': public_course_driver.root_dir / 'docs',
-        })
-    if (private_course_driver.root_dir / 'images').exists():
-        course_docs.update({
-            private_course_driver.root_dir / 'images': public_course_driver.root_dir / 'images',
-        })
-
-    # Course tools
-    course_tools: dict[Path, Path] = dict()
-    if (private_course_driver.root_dir / 'tools').exists():
-        course_tools = {
-            i: public_course_driver.root_dir / 'tools' / i.name
-            for i in (private_course_driver.root_dir / 'tools').glob('*')
-            if i.is_dir() or (i.is_file() and not filename_match_patterns(i, EXPORT_IGNORE_COMMON_FILE_PATTERNS))
-        }
-
-    # Started tasks: copy template to public repo
-    started_tasks_templates_dirs: dict[Path, Path] = {
-        private_template_dir:
-            public_course_driver.get_task_solution_dir(task, check_exists=False)  # type: ignore
-        for task in course_schedule.get_tasks(enabled=True, started=True)
-        if (private_template_dir := private_course_driver.get_task_template_dir(task, check_exists=True))
-    }
-    started_tasks_public_tests_dirs: dict[Path, Path] = {
-        private_public_tests_dir:
-            public_course_driver.get_task_public_test_dir(task, check_exists=False)  # type: ignore
-        for task in course_schedule.get_tasks(enabled=True, started=True)
-        if (private_public_tests_dir := private_course_driver.get_task_public_test_dir(task, check_exists=True))
-    }
-    started_tasks_common_files: dict[Path, Path] = {
-        i: public_course_driver.get_task_dir(task, check_exists=False) / i.name  # type: ignore
-        for task in course_schedule.get_tasks(enabled=True, started=True)
-        if (private_task_dir := private_course_driver.get_task_dir(task))
-        for i in private_task_dir.glob('*.*')
-    }
-
-    # Lectures for enabled groups (if any)
-    started_lectures_dirs: dict[Path, Path] = {
-        private_lecture_dir: public_course_driver.get_group_lecture_dir(group, check_exists=False)  # type: ignore
-        for group in course_schedule.get_groups(enabled=True, started=True)
-        if (private_lecture_dir := private_course_driver.get_group_lecture_dir(group, check_exists=True))
-    }
-
-    # Reviews for ended groups (if any)
-    ended_reviews_dirs: dict[Path, Path] = {
-        private_review_dir:
-            public_course_driver.get_group_submissions_review_dir(group, check_exists=False)  # type: ignore
-        for group in course_schedule.get_groups(enabled=True, ended=True)
-        if (private_review_dir := private_course_driver.get_group_submissions_review_dir(group, check_exists=True))
-    }
-
-    return {
-        **common_files,
-        **course_docs,
-        **course_tools,
-        **started_tasks_templates_dirs,
-        **started_tasks_public_tests_dirs,
-        **started_tasks_common_files,
-        **started_lectures_dirs,
-        **ended_reviews_dirs,
-    }
-
-
-def _dirs_to_files(files_and_dirs: set[Path]) -> set[Path]:
-    # Recursive add all files if we have dirs
-    all_files_dirs = set()
-    for i in files_and_dirs:
-        if i.is_file():
-            all_files_dirs.add(i)
-        else:
-            all_files_dirs.update(i.glob('**/*'))
-
-    return all_files_dirs  # - set(PUBLIC_DIR.glob('.git/**/*'))
-
-
-def _get_disabled_files(
-        enabled_files: set[Path],
-        course_driver: CourseDriver,
-) -> set[Path]:
-    all_files = [
-        i for i in course_driver.root_dir.glob('**/*') if i.is_file()
-    ]
-
-    return set(all_files) - enabled_files - set(course_driver.root_dir.glob('.git/**/*')) - {course_driver.root_dir}
+    return files
 
 
 def export_public_files(
