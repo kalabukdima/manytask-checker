@@ -48,7 +48,6 @@ class ScriptTester(Tester):
             build_dir: Path,
             source_dir: Path,
             public_tests_dir: Path | None,
-            private_tests_dir: Path | None,
             tests_root_dir: Path,
             sandbox: bool = True,
             verbose: bool = False,
@@ -60,14 +59,6 @@ class ScriptTester(Tester):
         assert public_tests_dir
 
         print_info('Building...', color='orange')
-
-        if private_tests_dir is not None:
-            self._executor(
-                copy_files,
-                source=private_tests_dir,
-                target=public_tests_dir,
-                verbose=verbose,
-            )
 
         self._executor(
             copy_files,

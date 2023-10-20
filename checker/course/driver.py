@@ -152,74 +152,6 @@ class CourseDriver:
 
         return deadlines_file_path
 
-    def get_group_lecture_dir(
-            self,
-            group: Group,
-            check_exists: bool = True,
-    ) -> Path | None:
-        lecture_dir: Path | None = None
-
-        if self.layout == 'lectures':
-            lecture_dir = self.root_dir / group.name / 'lecture'
-        elif self.layout == 'groups':
-            lecture_dir = self.root_dir / 'lectures' / group.name
-        elif self.layout == 'flat':
-            lecture_dir = None
-        else:
-            assert False, 'Not Reachable'  # pragma: no cover
-
-        if check_exists and lecture_dir and not lecture_dir.exists():
-            print_info(f'Lecture dir <{lecture_dir}> not exists, set to None.')
-            lecture_dir = None
-
-        return lecture_dir
-
-    def get_group_submissions_review_dir(
-            self,
-            group: Group,
-            check_exists: bool = True,
-    ) -> Path | None:
-        review_dir: Path | None = None
-
-        if self.layout == 'lectures':
-            # both public and private
-            review_dir = self.root_dir / group.name / 'review'
-        elif self.layout == 'groups':
-            # both public and private
-            review_dir = self.root_dir / 'solutions' / group.name
-        elif self.layout == 'flat':
-            review_dir = None
-        else:
-            assert False, 'Not Reachable'  # pragma: no cover
-
-        if check_exists and review_dir and not review_dir.exists():
-            print_info(f'Review dir <{review_dir}> not exists, set to None.')
-            review_dir = None
-
-        return review_dir
-
-    def get_group_dir(
-            self,
-            group: Group,
-            check_exists: bool = True,
-    ) -> Path | None:
-        group_root_dir: Path | None = None
-
-        if self.layout == 'lectures':
-            group_root_dir = self.root_dir / group.name
-        elif self.layout == 'groups':
-            group_root_dir = self.root_dir / group.name
-        elif self.layout == 'flat':
-            group_root_dir = None
-        else:
-            assert False, 'Not Reachable'  # pragma: no cover
-
-        if check_exists and group_root_dir and not group_root_dir.exists():
-            print_info(f'Group dir <{group_root_dir}> not exists, set to None.')
-            group_root_dir = None
-
-        return group_root_dir
-
     def get_task_dir(
             self,
             task: Task,
@@ -247,58 +179,12 @@ class CourseDriver:
             task: Task,
             check_exists: bool = True,
     ) -> Path | None:
-        task_solution_dir: Path | None = None
-
-        if self.layout == 'lectures':
-            if self.repo_type == 'private':
-                task_solution_dir = self.root_dir / task.group.name / 'tasks' / task.name / 'solution'
-            else:
-                task_solution_dir = self.root_dir / task.group.name / 'tasks' / task.name
-        elif self.layout == 'groups':
-            if self.repo_type == 'private':
-                task_solution_dir = self.root_dir / 'tests' / task.group.name / task.name
-            else:
-                task_solution_dir = self.root_dir / task.group.name / task.name
-        elif self.layout == 'flat':
-            if self.repo_type == 'private':
-                task_solution_dir = self.root_dir / 'tests' / task.name
-            else:
-                task_solution_dir = self.root_dir / task.name
-        else:
-            assert False, 'Not Reachable'  # pragma: no cover
-
+        task_solution_dir: Path | None = self.get_task_dir(task, check_exists=False) / ".solution"
         if check_exists and task_solution_dir and not task_solution_dir.exists():
             print_info(f'Task solution dir <{task_solution_dir}> not exists, set to None.')
             task_solution_dir = None
 
         return task_solution_dir
-
-    def get_task_template_dir(
-            self,
-            task: Task,
-            check_exists: bool = True,
-    ) -> Path | None:
-        task_template_dir: Path | None = None
-
-        if self.layout == 'lectures':
-            if self.repo_type == 'private':
-                task_template_dir = self.root_dir / task.group.name / 'tasks' / task.name / 'template'
-            else:
-                task_template_dir = self.root_dir / task.group.name / 'tasks' / task.name
-        elif self.layout == 'groups':
-            # both public and private
-            task_template_dir = self.root_dir / task.group.name / task.name
-        elif self.layout == 'flat':
-            # both public and private
-            task_template_dir = self.root_dir / task.name
-        else:
-            assert False, 'Not Reachable'  # pragma: no cover
-
-        if check_exists and task_template_dir and not task_template_dir.exists():
-            print_info(f'Task template dir <{task_template_dir}> not exists, set to None.')
-            task_template_dir = None
-
-        return task_template_dir
 
     def get_task_public_test_dir(
             self,
@@ -312,82 +198,14 @@ class CourseDriver:
                 public_tests_dir = self.root_dir / task.group.name / 'tasks' / task.name / 'public'
             else:
                 public_tests_dir = self.root_dir / task.group.name / 'tasks' / task.name
-        elif self.layout == 'groups':
-            # both public and private
-            public_tests_dir = self.root_dir / task.group.name / task.name
-        elif self.layout == 'flat':
-            # both public and private
-            public_tests_dir = self.root_dir / task.name
         else:
-            assert False, 'Not Reachable'  # pragma: no cover
+            public_tests_dir = self.get_task_dir(task, check_exists=False)
 
         if check_exists and public_tests_dir and not public_tests_dir.exists():
             print_info(f'Task public tests dir <{public_tests_dir}> not exists, set to None.')
             public_tests_dir = None
 
         return public_tests_dir
-
-    def get_task_private_test_dir(
-            self,
-            task: Task,
-            check_exists: bool = True,
-    ) -> Path | None:
-        private_tests_dir: Path | None = None
-
-        if self.layout == 'lectures':
-            if self.repo_type == 'private':
-                private_tests_dir = self.root_dir / task.group.name / 'tasks' / task.name / 'private'
-            else:
-                private_tests_dir = None
-        elif self.layout == 'groups':
-            if self.repo_type == 'private':
-                private_tests_dir = self.root_dir / 'tests' / task.group.name / task.name
-            else:
-                private_tests_dir = None
-        elif self.layout == 'flat':
-            if self.repo_type == 'private':
-                private_tests_dir = self.root_dir / 'tests' / task.name
-            else:
-                private_tests_dir = None
-        else:
-            assert False, 'Not Reachable'  # pragma: no cover
-
-        if check_exists and private_tests_dir and not private_tests_dir.exists():
-            print_info(f'Task private tests dir <{private_tests_dir}> not exists, set to None.')
-            private_tests_dir = None
-
-        return private_tests_dir
-
-    def get_task_config_dir(
-            self,
-            task: Task,
-            check_exists: bool = True,
-    ) -> Path | None:
-        config_dir: Path | None = None
-
-        if self.layout == 'lectures':
-            if self.repo_type == 'private':
-                config_dir = self.root_dir / task.group.name / 'tasks' / task.name
-            else:
-                config_dir = None
-        elif self.layout == 'groups':
-            if self.repo_type == 'private':
-                config_dir = self.root_dir / 'tests' / task.group.name / task.name
-            else:
-                config_dir = None
-        elif self.layout == 'flat':
-            if self.repo_type == 'private':
-                config_dir = self.root_dir / 'tests' / task.name
-            else:
-                config_dir = None
-        else:
-            assert False, 'Not Reachable'  # pragma: no cover
-
-        if check_exists and config_dir and not config_dir.exists():
-            print_info(f'Task config dir <{config_dir}> not exists, set to None.')
-            config_dir = None
-
-        return config_dir
 
     def get_task_dir_name(
             self,

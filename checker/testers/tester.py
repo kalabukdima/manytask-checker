@@ -105,7 +105,6 @@ class Tester:
             build_dir: Path,
             source_dir: Path,
             public_tests_dir: Path | None,
-            private_tests_dir: Path | None,
             tests_root_dir: Path,
             sandbox: bool = True,
             verbose: bool = False,
@@ -117,7 +116,6 @@ class Tester:
         @param build_dir: Directory to copy files into and build there
         @param source_dir: Solution source code directory
         @param public_tests_dir: Directory to copy public tests from
-        @param private_tests_dir: Directory to copy private tests from
         @param sandbox: Wrap all student's code to sandbox; @see Executor.sandbox
         @param verbose: Verbose output (can exhibit private tests information)
         @param normalize_output: Normalize all stages output to stderr
@@ -165,9 +163,7 @@ class Tester:
     def test_task(
             self,
             source_dir: Path,
-            config_dir: Path,
             public_tests_dir: Path | None,
-            private_tests_dir: Path | None,
             tests_root_dir: Path,
             verbose: bool = False,
             normalize_output: bool = False,
@@ -178,9 +174,7 @@ class Tester:
         * _run_tests: run testing and linting
         * _clean_build: cleanup if necessary
         @param source_dir: Solution dir (student's solution or authors' solution)
-        @param config_dir: Directory with task config
         @param public_tests_dir: Directory to copy public tests from
-        @param private_tests_dir: Directory to copy private tests from
         @param tests_root_dir: Root directory of the repository with tasks
         @param verbose: Verbose output (can exhibit private tests information)
         @param normalize_output: Normalize all stages output to stderr
@@ -188,7 +182,7 @@ class Tester:
         @return: Percentage of the final score
         """
         # Read test config
-        test_config = self.TaskTestConfig.from_json(config_dir / '.tester.json')
+        test_config = self.TaskTestConfig.from_json(public_tests_dir / '.tester.json')
 
         # Create build dir as tmp dir
         build_dir = self.persistent_build_dir or Path(tempfile.mkdtemp())
@@ -200,7 +194,6 @@ class Tester:
                 build_dir,
                 source_dir,
                 public_tests_dir,
-                private_tests_dir,
                 tests_root_dir,
                 sandbox=True,
                 verbose=verbose,

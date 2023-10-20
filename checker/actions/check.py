@@ -20,14 +20,10 @@ def _check_single_task(
         catch_output: bool = False,
 ) -> str | None:
     reference_source_dir = private_course_driver.get_task_solution_dir(task)
-    reference_config_dir = private_course_driver.get_task_config_dir(task)
     reference_public_tests_dir = private_course_driver.get_task_public_test_dir(task)
-    reference_private_tests_dir = private_course_driver.get_task_private_test_dir(task)
     reference_tests_root_dir = private_course_driver.root_dir
-    assert reference_source_dir, 'reference_source_dir have to exists'
-    assert reference_config_dir, 'reference_config_dir have to exists'
-    assert reference_public_tests_dir or reference_private_tests_dir, \
-        'reference_public_tests_dir or reference_private_tests_dir have to exists'
+    assert reference_source_dir, 'reference_source_dir has to exist'
+    assert reference_public_tests_dir, 'reference_public_tests_dir has to exist'
 
     if catch_output:
         f = io.StringIO()
@@ -36,9 +32,7 @@ def _check_single_task(
             try:
                 tester.test_task(
                     reference_source_dir,
-                    reference_config_dir,
                     reference_public_tests_dir,
-                    reference_private_tests_dir,
                     reference_tests_root_dir,
                     verbose=verbose,
                     normalize_output=True,
@@ -53,9 +47,7 @@ def _check_single_task(
         print_task_info(task.full_name)
         tester.test_task(
             reference_source_dir,
-            reference_config_dir,
             reference_public_tests_dir,
-            reference_private_tests_dir,
             reference_tests_root_dir,
             verbose=verbose,
             normalize_output=True,

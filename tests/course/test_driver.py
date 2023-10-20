@@ -63,45 +63,6 @@ class TestDriver:
             driver.get_deadlines_file_path(raise_if_not_exists=False)
 
     @pytest.mark.parametrize('repo_type,layout,location', [
-        ('public', 'flat', None),
-        ('private', 'flat', None),
-        ('public', 'groups', 'lectures/test_group'),
-        ('private', 'groups', 'lectures/test_group'),
-        ('public', 'lectures', 'test_group/lecture'),
-        ('private', 'lectures', 'test_group/lecture'),
-    ])
-    def test_get_lecture_dir(self, repo_type: str, layout: str, location: str | None, test_group: Group) -> None:
-        driver = CourseDriver(Path(''), repo_type=repo_type, layout=layout)
-        assert driver.get_group_lecture_dir(test_group, check_exists=False) == ((Path('') / location) if location else None)
-        assert driver.get_group_lecture_dir(test_group, check_exists=True) is None
-
-    @pytest.mark.parametrize('repo_type,layout,location', [
-        ('public', 'flat', None),
-        ('private', 'flat', None),
-        ('public', 'groups', 'solutions/test_group'),
-        ('private', 'groups', 'solutions/test_group'),
-        ('public', 'lectures', 'test_group/review'),
-        ('private', 'lectures', 'test_group/review'),
-    ])
-    def test_get_review_dir(self, repo_type: str, layout: str, location: str | None, test_group: Group) -> None:
-        driver = CourseDriver(Path(''), repo_type=repo_type, layout=layout)
-        assert driver.get_group_submissions_review_dir(test_group, check_exists=False) == ((Path('') / location) if location else None)
-        assert driver.get_group_submissions_review_dir(test_group, check_exists=True) is None
-
-    @pytest.mark.parametrize('repo_type,layout,location', [
-        ('public', 'flat', None),
-        ('private', 'flat', None),
-        ('public', 'groups', 'test_group'),
-        ('private', 'groups', 'test_group'),
-        ('public', 'lectures', 'test_group'),
-        ('private', 'lectures', 'test_group'),
-    ])
-    def test_get_group_dir(self, repo_type: str, layout: str, location: str | None, test_group: Group) -> None:
-        driver = CourseDriver(Path(''), repo_type=repo_type, layout=layout)
-        assert driver.get_group_dir(test_group, check_exists=False) == ((Path('') / location) if location else None)
-        assert driver.get_group_dir(test_group, check_exists=True) is None
-
-    @pytest.mark.parametrize('repo_type,layout,location', [
         ('public', 'flat', 'test_task_0'),
         ('private', 'flat', 'test_task_0'),
         ('public', 'groups', 'test_group/test_task_0'),
@@ -133,38 +94,12 @@ class TestDriver:
         ('public', 'groups', 'test_group/test_task_0'),
         ('private', 'groups', 'test_group/test_task_0'),
         ('public', 'lectures', 'test_group/tasks/test_task_0'),
-        ('private', 'lectures', 'test_group/tasks/test_task_0/template'),
-    ])
-    def test_get_task_template_dir(self, repo_type: str, layout: str, location: str | None, test_task: Task) -> None:
-        driver = CourseDriver(Path(''), repo_type=repo_type, layout=layout)
-        assert driver.get_task_template_dir(test_task, check_exists=False) == ((Path('') / location) if location else None)
-        assert driver.get_task_template_dir(test_task, check_exists=True) is None
-
-    @pytest.mark.parametrize('repo_type,layout,location', [
-        ('public', 'flat', 'test_task_0'),
-        ('private', 'flat', 'test_task_0'),
-        ('public', 'groups', 'test_group/test_task_0'),
-        ('private', 'groups', 'test_group/test_task_0'),
-        ('public', 'lectures', 'test_group/tasks/test_task_0'),
         ('private', 'lectures', 'test_group/tasks/test_task_0/public'),
     ])
     def test_get_task_public_test_dir(self, repo_type: str, layout: str, location: str | None, test_task: Task) -> None:
         driver = CourseDriver(Path(''), repo_type=repo_type, layout=layout)
         assert driver.get_task_public_test_dir(test_task, check_exists=False) == ((Path('') / location) if location else None)
         assert driver.get_task_public_test_dir(test_task, check_exists=True) is None
-
-    @pytest.mark.parametrize('repo_type,layout,location', [
-        ('public', 'flat', None),
-        ('private', 'flat', 'tests/test_task_0'),
-        ('public', 'groups', None),
-        ('private', 'groups', 'tests/test_group/test_task_0'),
-        ('public', 'lectures', None),
-        ('private', 'lectures', 'test_group/tasks/test_task_0/private'),
-    ])
-    def test_get_task_private_test_dir(self, repo_type: str, layout: str, location: str | None, test_task: Task) -> None:
-        driver = CourseDriver(Path(''), repo_type=repo_type, layout=layout)
-        assert driver.get_task_private_test_dir(test_task, check_exists=False) == ((Path('') / location) if location else None)
-        assert driver.get_task_private_test_dir(test_task, check_exists=True) is None
 
     @pytest.mark.parametrize('layout,raw,task_name', [
         ('flat', 'foo', None),
