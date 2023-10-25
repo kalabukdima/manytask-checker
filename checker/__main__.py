@@ -65,6 +65,7 @@ def main(
 @click.option('--group', type=str, multiple=True, help='Group name to check')
 @click.option('--no-clean', is_flag=True, help='Clean or not check tmp folders')
 @click.option('--dry-run', is_flag=True, help='Do not execute anything, only print')
+@click.option('--build-dir', required=False, type=ClickTypeReadableDirectory, help='Reuse given build directory instead of creating separate ones')
 @click.option('--parallelize', is_flag=True, help='Execute parallel checking of tasks')
 @click.option('--num-processes', type=int, default=None, help='Num of processes parallel checking (default: unlimited)')
 @click.option('--contributing', is_flag=True, help='Run task check for students` contribution (decrease verbosity)')
@@ -76,6 +77,7 @@ def check(
         group: list[str] | None = None,
         no_clean: bool = False,
         dry_run: bool = False,
+        build_dir: Path | None = None,
         parallelize: bool = False,
         num_processes: int | None = None,
         contributing: bool = False,
@@ -98,6 +100,7 @@ def check(
         system=course_config.system,
         cleanup=not no_clean,
         dry_run=dry_run,
+        build_dir=build_dir,
         **asdict(course_config.tester_args_val),
     )
 

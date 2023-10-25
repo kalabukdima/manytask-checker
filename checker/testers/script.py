@@ -34,12 +34,11 @@ class ScriptTester(Tester):
 
     def __init__(
             self,
-            cleanup: bool = True,
-            dry_run: bool = False,
             default_build_cmd: str | None = None,
             default_test_cmd: str | None = None,
+            **kwargs: Any,
     ):
-        super(ScriptTester, self).__init__(cleanup=cleanup, dry_run=dry_run)
+        super(ScriptTester, self).__init__(**kwargs)
         self.default_build_cmd = default_build_cmd
         self.default_test_cmd = default_test_cmd
 

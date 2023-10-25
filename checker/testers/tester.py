@@ -67,10 +67,12 @@ class Tester:
             self,
             cleanup: bool = True,
             dry_run: bool = False,
+            build_dir: Path | None = None,
     ):
         self.cleanup = cleanup
         self.dry_run = dry_run
         self._executor = Sandbox(dry_run=dry_run)
+        self.persistent_build_dir = build_dir
 
     @classmethod
     def create(
@@ -78,6 +80,7 @@ class Tester:
             system: str,
             cleanup: bool = True,
             dry_run: bool = False,
+            build_dir: Path | None = None,
             **kwargs: Any,
     ) -> 'Tester':
         """
@@ -86,17 +89,18 @@ class Tester:
         @param system: Type of the testing system
         @param cleanup: Perform cleanup after testing
         @param dry_run: Setup dry run mode (really executes nothing)
+        @param build_dir: Reuse given build directory instead of creating separate ones
         @return: Configured Tester object (python, cpp, etc.)
         """
         if system == 'python':
             from . import python
-            return python.PythonTester(cleanup=cleanup, dry_run=dry_run, **kwargs)
+            return python.PythonTester(cleanup=cleanup, dry_run=dry_run, build_dir=build_dir, **kwargs)
         elif system == 'make':
             from . import make
-            return make.MakeTester(cleanup=cleanup, dry_run=dry_run, **kwargs)
+            return make.MakeTester(cleanup=cleanup, dry_run=dry_run, build_dir=build_dir, **kwargs)
         elif system == 'script':
             from . import script
-            return script.ScriptTester(cleanup=cleanup, dry_run=dry_run, **kwargs)
+            return script.ScriptTester(cleanup=cleanup, dry_run=dry_run, build_dir=build_dir, **kwargs)
         else:
             raise TesterNotImplemented(f'Tester for <{system}> are not supported right now')
 
@@ -193,7 +197,7 @@ class Tester:
         test_config = self.TaskTestConfig.from_json(config_dir / '.tester.json')
 
         # Create build dir as tmp dir
-        build_dir = Path(tempfile.mkdtemp())
+        build_dir = self.persistent_build_dir or Path(tempfile.mkdtemp())
         build_dir.chmod(0o777)  # Set mode for build directory (for code generation and so on)
 
         try:
@@ -223,7 +227,7 @@ class Tester:
             print_info('\nOoops... Something went wrong: ' + e.msg + (e.output or ''), color='red')
             raise e
         finally:
-            if self.cleanup:
+            if self.cleanup and not self.persistent_build_dir:
                 self._clean_build(
                     test_config,
                     build_dir,
