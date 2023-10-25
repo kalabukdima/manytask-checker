@@ -25,6 +25,7 @@ class Task:
     group: 'Group'
     name: str
     full_name: str = field(init=False)
+    path: str
 
     max_score: int
     enabled: bool = True
@@ -134,6 +135,7 @@ class CourseSchedule:
     def __init__(
             self,
             deadlines_config: Path,
+            task_paths: list[Path],
     ):
         try:
             with open(deadlines_config) as config_file:
@@ -143,6 +145,10 @@ class CourseSchedule:
 
         if not deadlines:
             raise BadConfig(f'Empty config file <{deadlines_config}>')
+
+
+        task_name_to_path = {p.name: str(p) for p in task_paths}
+        assert len(task_paths) == len(task_name_to_path), f'Task names passed to CourseSchedule are not unique'
 
         self.groups: OrderedDict[str, Group] = OrderedDict()
         self.tasks: OrderedDict[str, Task] = OrderedDict()
@@ -185,9 +191,14 @@ class CourseSchedule:
                 except (KeyError, TypeError, ValueError, AttributeError) as e:
                     raise BadTaskConfig(f'Task {task_name} has bad config') from e
 
+                if task_name not in task_name_to_path:
+                    raise BadConfig(f'Task {task_name} was not found. Known tasks: {task_name_to_path}')
+                task_path = task_name_to_path[task_name]
+
                 task = Task(
                     group=group,
                     name=task_name,
+                    path=task_path,
                     max_score=task_score,
                     enabled=task_enabled,
                     scoring_func=task_scoring_func,

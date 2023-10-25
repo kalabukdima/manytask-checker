@@ -4,3 +4,5 @@
   tasks:
     - task: 00_test
       score: 10
+    - task: 01_empty
+      score: 10

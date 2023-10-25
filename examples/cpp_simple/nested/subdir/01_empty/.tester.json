@@ -1,0 +1,5 @@
+{
+    "allow_change": [],
+    "build_cmd": "true",
+    "test_cmd": "true"
+}

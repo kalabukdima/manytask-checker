@@ -111,5 +111,5 @@ class TestDriver:
         ('lectures', 'group0/tasks/task0/dir/main.c', 'task0'),
     ])
     def test_get_task_dir_name(self, layout: str, raw: str, task_name: str | None) -> None:
-        driver = CourseDriver(Path(''), layout=layout)
+        driver = CourseDriver(Path(DATA_FOLDER), layout=layout)
         assert driver.get_task_dir_name(raw) == task_name

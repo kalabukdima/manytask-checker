@@ -95,6 +95,7 @@ def check(
     )
     course_schedule = CourseSchedule(
         deadlines_config=private_course_driver.get_deadlines_file_path(),
+        task_paths=private_course_driver.task_paths,
     )
     tester = Tester.create(
         system=course_config.system,
@@ -160,6 +161,7 @@ def grade(
     )
     course_schedule = CourseSchedule(
         deadlines_config=private_course_driver.get_deadlines_file_path(),
+        task_paths=private_course_driver.task_paths,
     )
     tester = Tester.create(
         system=course_config.system,
@@ -204,6 +206,7 @@ def grade_mrs(
     )
     course_schedule = CourseSchedule(
         deadlines_config=private_course_driver.get_deadlines_file_path(),
+        task_paths=private_course_driver.task_paths,
     )
 
     username = os.environ['CI_PROJECT_NAME']
@@ -246,6 +249,7 @@ def grade_students_mrs(
     )
     course_schedule = CourseSchedule(
         deadlines_config=private_course_driver.get_deadlines_file_path(),
+        task_paths=private_course_driver.task_paths,
     )
 
     gitlab_connection = GitlabConnection(
@@ -298,6 +302,7 @@ def export_public(
     )
     course_schedule = CourseSchedule(
         deadlines_config=private_course_driver.get_deadlines_file_path(),
+        task_paths=private_course_driver.task_paths,
     )
 
     export_public_files(

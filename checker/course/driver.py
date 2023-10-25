@@ -12,6 +12,9 @@ from ..utils import print_info
 from .schedule import Group, Task
 
 
+TASK_CONFIG_FILENAME = '.tester.json'
+
+
 class CourseDriver:
     """The interlayer between course and file system
     Course can have different layouts;
@@ -91,6 +94,9 @@ class CourseDriver:
                     - .tester.json [optional]
                 - ...
         - ...
+    * any
+        Structure your files however you want. Any directory with the ".course.json" file is considered a task.
+        The name of that directory is used as the task name and should be unique.
 
     For templates:
         * search - will search template in public folder
@@ -98,7 +104,7 @@ class CourseDriver:
         * create_or_search - will search template in public folder or will create template from gold solution
     """
 
-    LAYOUTS = ['flat', 'groups', 'lectures']
+    LAYOUTS = ['flat', 'groups', 'lectures', 'any']
     TEMPLATES = ['create', 'search', 'create_or_search']
     REPO_TYPES = ['public', 'private']
 
@@ -106,7 +112,7 @@ class CourseDriver:
             self,
             root_dir: Path,
             repo_type: str = 'public',
-            layout: str = 'groups',
+            layout: str = 'any',
             template: str = 'search',
     ):
         """
@@ -126,6 +132,10 @@ class CourseDriver:
         if layout == 'flat':
             warn(f'<{layout}> layout is deprecated', DeprecationWarning)
         self.layout = layout
+
+        self.task_paths = [p.relative_to(self.root_dir).parent for p in self.root_dir.glob(f'**/{TASK_CONFIG_FILENAME}')]
+        assert len({p.name for p in self.task_paths}) == len(self.task_paths), \
+            f'Task names inside {self.root_dir.resolve()} are not unique'
 
         assert template in CourseDriver.TEMPLATES, f'Template <{layout}> are not implemented'
         self.template = template
@@ -149,16 +159,7 @@ class CourseDriver:
             task: Task,
             check_exists: bool = True,
     ) -> Path | None:
-        task_root_dir: Path | None = None
-
-        if self.layout == 'lectures':
-            task_root_dir = self.root_dir / task.group.name / 'tasks' / task.name
-        elif self.layout == 'groups':
-            task_root_dir = self.root_dir / task.group.name / task.name
-        elif self.layout == 'flat':
-            task_root_dir = self.root_dir / task.name
-        else:
-            assert False, 'Not Reachable'  # pragma: no cover
+        task_root_dir: Path = self.root_dir / task.path
 
         if check_exists and task_root_dir and not task_root_dir.exists():
             print_info(f'Task dir <{task_root_dir}> not exists, set to None.')
@@ -171,7 +172,12 @@ class CourseDriver:
             task: Task,
             check_exists: bool = True,
     ) -> Path | None:
-        task_solution_dir: Path | None = self.get_task_dir(task, check_exists=False) / ".solution"
+        task_solution_dir: Path | None = None
+        if self.repo_type == 'private':
+            task_solution_dir = self.get_task_dir(task, check_exists=False) / ".solution"
+        else:
+            task_solution_dir = self.get_task_dir(task, check_exists=False)
+
         if check_exists and task_solution_dir and not task_solution_dir.exists():
             print_info(f'Task solution dir <{task_solution_dir}> not exists, set to None.')
             task_solution_dir = None
@@ -201,9 +207,16 @@ class CourseDriver:
 
     def get_task_dir_name(
             self,
-            path: str,
+            file: str,
     ) -> str | None:
-        path_split = path.split(os.path.sep, maxsplit=3)
+        if self.layout == 'any':
+            assert self.task_paths
+            path = Path(file)
+            for task_path in self.task_paths:
+                if path.is_relative_to(task_path):
+                    return task_path.name
+            return None
+        path_split = file.split(os.file.sep, maxsplit=3)
         if len(path_split) < 2:  # Changed file not in subdir
             return None
         if self.layout == 'lectures':

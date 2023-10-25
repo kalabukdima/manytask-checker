@@ -16,4 +16,4 @@ class TestCourse:
 
 class TestDeadlines:
     def test_read_course(self) -> None:
-        CourseSchedule(EXAMPLES_FOLDER / '.deadlines.yml')
+        CourseSchedule(EXAMPLES_FOLDER / '.deadlines.yml', [Path(f'task_{i}') for i in range(1, 7)])

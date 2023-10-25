@@ -404,7 +404,7 @@ def grade_on_ci(
     tasks: list[Task] = []
     groups: list[Group] = []
     for changed_file in changes:
-        changed_task_dir = public_course_driver.get_task_dir_name(changed_file)
+        changed_task_dir = private_course_driver.get_task_dir_name(changed_file)
         if changed_task_dir is None or changed_task_dir not in course_schedule.tasks:
             continue
 

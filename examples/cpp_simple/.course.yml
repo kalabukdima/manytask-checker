@@ -6,7 +6,7 @@ second_deadline_max: 0.3
 
 # checker
 system: script
-layout: flat
+layout: any
 executor: sandbox
 templates: search
 tester_args:

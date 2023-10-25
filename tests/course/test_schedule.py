@@ -117,15 +117,15 @@ class TestGroup:
 class TestSchedule:
     def test_wrong_file(self, tmp_path: Path) -> None:
         with pytest.raises(BadConfig):
-            CourseSchedule(DATA_FOLDER / 'not-existed-file.yml')
+            CourseSchedule(DATA_FOLDER / 'not-existed-file.yml', [])
 
         with pytest.raises(BadConfig):
-            CourseSchedule(DATA_FOLDER / 'bad-config.yml')
+            CourseSchedule(DATA_FOLDER / 'bad-config.yml', [])
 
         tmp_file = tmp_path / 'empty-file.yml'
         tmp_file.touch()
         with pytest.raises(BadConfig):
-            CourseSchedule(tmp_file)
+            CourseSchedule(tmp_file, [])
 
     def test_get_tasks(self) -> None:
         pass
